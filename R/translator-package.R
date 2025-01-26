@@ -3,6 +3,7 @@
 
 ## usethis namespace: start
 #' @importFrom dplyr across
+#' @importFrom dplyr everything
 #' @importFrom dplyr group_by
 #' @importFrom dplyr if_else
 #' @importFrom dplyr lag

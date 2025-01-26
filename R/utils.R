@@ -27,7 +27,7 @@ get_size <- function(data) {
 #' @importFrom purrr map list_rbind
 #' @importFrom httr2 resp_body_json
 #' @importFrom tibble as_tibble
-#' @importFrom dplyr mutate if_else across pull
+#' @importFrom dplyr mutate if_else across pull everything
 extract_resp_deepl <- function(data, name) {
   data |> 
     map(\(x) resp_body_json(x)[[name]] |>
@@ -35,7 +35,7 @@ extract_resp_deepl <- function(data, name) {
       list_rbind() |>
       mutate(
         text = if_else(.data$text == "NA", NA, .data$text),
-        across(2:3, \(x) if_else(is.na(.data$text), NA, x))
+        across(everything(), \(x) if_else(is.na(.data$text), NA, x))
       ) |>
       pull("text")) |> 
       unlist()
