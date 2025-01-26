@@ -1,6 +1,7 @@
-#' Get Character Vector Size in kb
+#' @title Get Character Vector Size in kb
 #'
 #' @param data Character vector
+#' @return Numeric scalar giving the size of the character vector in kilobytes.
 #'
 #' @export
 #'
@@ -12,10 +13,14 @@ get_size <- function(data) {
   bytes / 1024
 }
 
-#' Extract Response Body from DeepL
+#' @title Extract Response Body from DeepL
+#' 
+#' @description
+#' Function to extract translations or improvements from a DeepL API response.
 #' 
 #' @param data A list of httr2 responses
 #' @param name Character scalar giving the key under which the text is stored.
+#' @return Character vector of translated/improved text.
 #' 
 #' @export
 #' 
@@ -23,7 +28,6 @@ get_size <- function(data) {
 #' @importFrom httr2 resp_body_json
 #' @importFrom tibble as_tibble
 #' @importFrom dplyr mutate if_else across pull
-#' 
 extract_resp_deepl <- function(data, name) {
   data |> 
     map(\(x) resp_body_json(x)[[name]] |>

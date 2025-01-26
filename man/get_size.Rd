@@ -9,6 +9,9 @@ get_size(data)
 \arguments{
 \item{data}{Character vector}
 }
+\value{
+Numeric scalar giving the size of the character vector in kilobytes.
+}
 \description{
 Get Character Vector Size in kb
 }

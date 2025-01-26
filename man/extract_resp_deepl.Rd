@@ -11,6 +11,9 @@ extract_resp_deepl(data, name)
 
 \item{name}{Character scalar giving the key under which the text is stored.}
 }
+\value{
+Character vector of translated/improved text.
+}
 \description{
-Extract Response Body from DeepL
+Function to extract translations or improvements from a DeepL API response.
 }
