@@ -119,10 +119,10 @@ translate <- function(
 
   # Store original NA positions to restore later
   na_positions <- is.na(data)
-  print(na_positions)
+
   # convert NA to "NA" to allow for accurate size computation
   data[na_positions] <- "NA"
-  print(data)
+
   # Set up the key
   key <- paste0("DeepL-Auth-Key ", auth_key)
 

@@ -4,15 +4,70 @@
 \alias{improve}
 \title{Improve texts using the DeepL API}
 \usage{
-improve(data, target_lang = NULL, auth_key)
+improve(
+  data,
+  target_lang = NULL,
+  auth_key = Sys.getenv("DEEPL_AUTH_KEY"),
+  max_request_size = 5,
+  timeout = 30
+)
 }
 \arguments{
-\item{data}{Character scalar or vector}
+\item{data}{Character scalar or vector to be improved. Required.}
 
-\item{target_lang}{Character scalar. Can only be any of x, x, x.}
+\item{target_lang}{Chr scalar specifying the target language (optional).
+If NULL (default), the original text language will be used.
+Must be one of the supported DeepL language codes (see Details).}
 
-\item{auth_key}{DeepL API key.}
+\item{auth_key}{Character scalar containing the DeepL API authentication key.
+Required. Can be provided directly or set as environment variable
+'DEEPL_AUTH_KEY'.}
+
+\item{max_request_size}{Numeric scalar specifying the maximum request size in
+kilobytes (default: 5). DeepL limits individual requests for the
+improvement endpoint.}
+
+\item{timeout}{Numeric scalar specifying the timeout for API requests in
+seconds (default: 30).}
+}
+\value{
+Character vector of improved text. Will preserve the length and
+order of the input. NA values in the input will remain NA in the
+output.
 }
 \description{
-Improve texts using the DeepL API
+This function sends text to DeepL's writing improvement API and returns the
+enhanced results. It handles batching of large text inputs and parallel
+processing of improvement requests.
+}
+\details{
+Supported language codes are:
+"BG" (Bulgarian), "CS" (Czech), "DA" (Danish), "DE" (German),
+"EL" (Greek), "EN" (English), "EN-GB" (British English),
+"EN-US" (American English), "ES" (Spanish), "ET" (Estonian),
+"FI" (Finnish), "FR" (French), "HU" (Hungarian), "ID" (Indonesian),
+"IT" (Italian), "JA" (Japanese), "KO" (Korean), "LT" (Lithuanian),
+"LV" (Latvian), "NB" (Norwegian), "NL" (Dutch), "PL" (Polish),
+"PT" (Portuguese), "PT-BR" (Brazilian Portuguese),
+"PT-PT" (European Portuguese), "RO" (Romanian), "RU" (Russian),
+"SK" (Slovak), "SL" (Slovenian), "SV" (Swedish), "TR" (Turkish),
+"UK" (Ukrainian), "ZH" (Chinese).
+}
+\examples{
+\dontrun{
+# Simple text improvement
+improve("Hello world", auth_key = "your-api-key")
+
+# Improve multiple strings with specified target language
+texts <- c("Hello", "How are you?", "Thank you")
+improve(texts,
+  target_lang = "EN-US",
+  auth_key = "your-api-key"
+)
+
+# Using an environment variable for authentication
+Sys.setenv(DEEPL_AUTH_KEY = "your-api-key")
+improve("Hello world")
+}
+
 }
