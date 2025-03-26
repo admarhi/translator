@@ -4,15 +4,79 @@
 \alias{translate}
 \title{Translate Texts Using the DeepL API}
 \usage{
-translate(data, target_lang, source_lang = NULL, auth_key)
+translate(
+  data,
+  target_lang,
+  source_lang = NULL,
+  auth_key = Sys.getenv("DEEPL_AUTH_KEY"),
+  formality = "default",
+  max_request_size = 80,
+  timeout = 30
+)
 }
 \arguments{
-\item{data}{Character scalar or vector}
+\item{data}{Character scalar or vector to be translated. Required.}
 
-\item{target_lang}{Character scalar. Can only be any of x, x, x.}
+\item{target_lang}{Character scalar specifying the target language. Must be
+one of the supported DeepL language codes (see Details).}
 
-\item{auth_key}{DeepL API key.}
+\item{source_lang}{Character scalar specifying the source language
+(optional). If NULL (default), DeepL will auto-detect the source language.
+Must be one of the supported DeepL language codes (see Details).}
+
+\item{auth_key}{Character scalar containing the DeepL API authentication key.
+Required. Can be provided directly or set as environment variable
+'DEEPL_AUTH_KEY'.}
+
+\item{formality}{Character scalar specifying the desired formality level
+(optional). Must be one of: "default", "more", "less", "prefer_more",
+"prefer_less".}
+
+\item{max_request_size}{Numeric scalar specifying the maximum request size in
+kilobytes (default: 80). DeepL limits individual requests to
+approximately 128KiB.}
+
+\item{timeout}{Numeric scalar specifying the timeout for API requests in
+seconds (default: 30).}
+}
+\value{
+Character vector of translated text. Will preserve the length and
+order of the input. NA values in the input will remain NA in the
+output.
 }
 \description{
-Translate Texts Using the DeepL API
+This function sends text to DeepL's translation API and returns the
+translated results. It handles batching of large text inputs and parallel
+processing of translation requests.
+}
+\details{
+Supported language codes for both source and target languages are:
+"BG" (Bulgarian), "CS" (Czech), "DA" (Danish), "DE" (German),
+"EL" (Greek), "EN" (English), "EN-GB" (British English),
+"EN-US" (American English), "ES" (Spanish), "ET" (Estonian),
+"FI" (Finnish), "FR" (French), "HU" (Hungarian), "ID" (Indonesian),
+"IT" (Italian), "JA" (Japanese), "KO" (Korean), "LT" (Lithuanian),
+"LV" (Latvian), "NB" (Norwegian), "NL" (Dutch), "PL" (Polish),
+"PT" (Portuguese), "PT-BR" (Brazilian Portuguese),
+"PT-PT" (European Portuguese), "RO" (Romanian), "RU" (Russian),
+"SK" (Slovak), "SL" (Slovenian), "SV" (Swedish), "TR" (Turkish),
+"UK" (Ukrainian), "ZH" (Chinese).
+}
+\examples{
+\dontrun{
+# Simple translation
+translate("Hello world", target_lang = "DE", auth_key = "your-api-key")
+
+# Translate multiple strings with specified source language
+texts <- c("Hello", "How are you?", "Thank you")
+translate(texts,
+  target_lang = "FR", source_lang = "EN",
+  auth_key = "your-api-key"
+)
+
+# Using an environment variable for authentication
+Sys.setenv(DEEPL_AUTH_KEY = "your-api-key")
+translate("Hello world", target_lang = "ES")
+}
+
 }
