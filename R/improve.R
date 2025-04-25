@@ -52,8 +52,10 @@
 #' @export
 #'
 #' @importFrom httr2 request req_headers req_body_form req_perform_parallel
-#' @importFrom httr2 req_timeout
-#' @importFrom purrr map
+#' @importFrom httr2 req_timeout req_retry resp_status resp_body_json
+#' @importFrom purrr map list_rbind
+#' @importFrom tibble as_tibble
+#' @importFrom dplyr mutate if_else across pull everything
 improve <- function(
   data,
   target_lang = NULL,
@@ -66,11 +68,22 @@ improve <- function(
     stop("'data' must be a character vector")
   }
 
+  # Vector of valid improve languages
+  VALID_IMPROVE_LANGUAGES <- c(
+    "DE",
+    "EN-GB",
+    "EN-US",
+    "ES",
+    "FR",
+    "IT",
+    "PT-BR",
+    "PT-PT"
+  )
   # Validate target_lang if provided
-  if (!is.null(target_lang) && !target_lang %in% valid_langs) {
+  if (!is.null(target_lang) && !target_lang %in% VALID_IMPROVE_LANGUAGES) {
     stop(
       "'target_lang' must be one of: ",
-      paste(valid_langs, collapse = ", ")
+      paste(VALID_IMPROVE_LANGUAGES, collapse = ", ")
     )
   }
 
@@ -98,47 +111,100 @@ improve <- function(
   # Set up the key
   key <- paste0("DeepL-Auth-Key ", auth_key)
 
-  # Construct base request
+  # Construct base request with retry logic
   req_base <-
     request(api_url) |>
     req_headers(Authorization = key, Accept = "application/json") |>
-    req_timeout(timeout)
+    req_timeout(timeout) |>
+    # Retry on transient errors (5xx, 429) up to 3 times with backoff
+    req_retry(
+      max_tries = 3,
+      is_transient = ~ resp_status(.x) %in% c(429, 500, 502, 503, 504)
+    )
 
   # Add target_lang if specified
   if (!is.null(target_lang)) {
     req_base <- req_body_form(req_base, target_lang = target_lang)
   }
 
-  # Function to handle request errors
-  handle_errors <- function(resp) {
-    if (inherits(resp, "error")) {
-      warning("Improvement request failed: ", conditionMessage(resp))
-      return(rep(NA_character_, length(resp$request$body$text)))
-    }
-    return(resp)
-  }
+  # Prepare batches for parallel processing
+  batches <- data |>
+    split_into_list(max_kib = max_request_size) |>
+    map(\(x) req_body_form(req_base, text = x, .multi = "explode"))
 
   # Execute improvement requests in parallel batches
-  improvements <- tryCatch(
-    {
-      data |>
-        split_into_list(max_kib = max_request_size) |>
-        map(\(x) req_body_form(req_base, text = x, .multi = "explode")) |>
-        req_perform_parallel(
-          progress = TRUE,
-          on_error = "continue"
-        ) |>
-        map(handle_errors) |>
-        extract_resp_deepl(name = "improvements")
-    },
-    error = function(e) {
-      stop("Text improvement failed: ", conditionMessage(e))
-    }
+  results <- req_perform_parallel(
+    batches,
+    progress = TRUE,
+    on_error = "continue" # Continue even if a request fails after retries
   )
 
+  # Process results: Handle both successful responses and errors
+  processed_results <- results |>
+    map(\(res) {
+      if (inherits(res, "httr2_response") && resp_status(res) < 300) {
+        # Success: Extract results from the response
+        json_body <- tryCatch(
+          resp_body_json(res),
+          error = function(e) {
+            warning("Failed to parse JSON response: ", conditionMessage(e))
+            NULL
+          }
+        )
+
+        # Check if parsing worked and 'improvements' key exists
+        if (is.null(json_body) || !("improvements" %in% names(json_body))) {
+          num_items_in_request <- length(res$request$body$data$text)
+          warning("Failed to parse response or 'improvements' key missing.")
+          return(rep(NA_character_, num_items_in_request))
+        }
+
+        # Extract and process the text (logic adapted from extract_resp_deepl)
+        json_body[["improvements"]] |>
+          map(\(y) as_tibble(y)) |>
+          list_rbind() |>
+          mutate(
+            text = if_else(.data$text == "NA", NA, .data$text),
+            across(everything(), \(z) if_else(is.na(.data$text), NA, z))
+          ) |>
+          pull("text")
+      } else if (inherits(res, "error")) {
+        # Failure after retries: Generate NAs for this batch
+        num_items_in_request <- 0
+        # Try to get number of items from the request stored in the error
+        if (!is.null(res$request) && !is.null(res$request$body$data$text)) {
+          num_items_in_request <- length(res$request$body$data$text)
+        } else {
+          warning("Could not determine number of items for failed batch.")
+        }
+        warning(
+          "Improvement request failed for a batch: ",
+          conditionMessage(res)
+        )
+        rep(NA_character_, num_items_in_request)
+      } else {
+        # Unexpected result type from req_perform_parallel
+        warning(
+          "Unexpected result type in parallel processing: ",
+          class(res)[1]
+        )
+        # Cannot determine number of NAs easily, return NULL or empty vector
+        character(0)
+      }
+    }) |>
+    unlist() # Combine results from all batches
+
+  # Ensure the output length matches the input length
+  # This is a safeguard, especially if errors occurred determining batch sizes
+  if (length(processed_results) != length(data)) {
+    warning("Output length does not match input length. Check for errors.")
+    # Attempt to resize, filling with NA, though this might be incorrect
+    length(processed_results) <- length(data)
+  }
+
   # Restore NA values in the original positions
-  improvements[na_positions] <- NA_character_
+  processed_results[na_positions] <- NA_character_
 
   # Return the improvements
-  improvements
+  processed_results
 }
