@@ -42,16 +42,14 @@ processing of improvement requests.
 }
 \details{
 Supported language codes are:
-"BG" (Bulgarian), "CS" (Czech), "DA" (Danish), "DE" (German),
-"EL" (Greek), "EN" (English), "EN-GB" (British English),
-"EN-US" (American English), "ES" (Spanish), "ET" (Estonian),
-"FI" (Finnish), "FR" (French), "HU" (Hungarian), "ID" (Indonesian),
-"IT" (Italian), "JA" (Japanese), "KO" (Korean), "LT" (Lithuanian),
-"LV" (Latvian), "NB" (Norwegian), "NL" (Dutch), "PL" (Polish),
-"PT" (Portuguese), "PT-BR" (Brazilian Portuguese),
-"PT-PT" (European Portuguese), "RO" (Romanian), "RU" (Russian),
-"SK" (Slovak), "SL" (Slovenian), "SV" (Swedish), "TR" (Turkish),
-"UK" (Ukrainian), "ZH" (Chinese).
+"DE" (German),
+"EN-GB" (British English),
+"EN-US" (American English),
+"ES" (Spanish),
+"FR" (French),
+"IT" (Italian),
+"PT-BR" (Brazilian Portuguese),
+"PT-PT" (European Portuguese)
 }
 \examples{
 \dontrun{

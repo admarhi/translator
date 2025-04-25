@@ -19,16 +19,14 @@
 #'
 #' @details
 #' Supported language codes are:
-#' "BG" (Bulgarian), "CS" (Czech), "DA" (Danish), "DE" (German),
-#' "EL" (Greek), "EN" (English), "EN-GB" (British English),
-#' "EN-US" (American English), "ES" (Spanish), "ET" (Estonian),
-#' "FI" (Finnish), "FR" (French), "HU" (Hungarian), "ID" (Indonesian),
-#' "IT" (Italian), "JA" (Japanese), "KO" (Korean), "LT" (Lithuanian),
-#' "LV" (Latvian), "NB" (Norwegian), "NL" (Dutch), "PL" (Polish),
-#' "PT" (Portuguese), "PT-BR" (Brazilian Portuguese),
-#' "PT-PT" (European Portuguese), "RO" (Romanian), "RU" (Russian),
-#' "SK" (Slovak), "SL" (Slovenian), "SV" (Swedish), "TR" (Turkish),
-#' "UK" (Ukrainian), "ZH" (Chinese).
+#' "DE" (German),
+#' "EN-GB" (British English),
+#' "EN-US" (American English),
+#' "ES" (Spanish),
+#' "FR" (French),
+#' "IT" (Italian),
+#' "PT-BR" (Brazilian Portuguese),
+#' "PT-PT" (European Portuguese)
 #'
 #' @return Character vector of improved text. Will preserve the length and
 #'         order of the input. NA values in the input will remain NA in the
@@ -57,11 +55,12 @@
 #' @importFrom httr2 req_timeout
 #' @importFrom purrr map
 improve <- function(
-    data,
-    target_lang = NULL,
-    auth_key = Sys.getenv("DEEPL_AUTH_KEY"),
-    max_request_size = 5,
-    timeout = 30) {
+  data,
+  target_lang = NULL,
+  auth_key = Sys.getenv("DEEPL_AUTH_KEY"),
+  max_request_size = 5,
+  timeout = 30
+) {
   # Input validation
   if (missing(data) || !is.character(data)) {
     stop("'data' must be a character vector")
