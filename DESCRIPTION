@@ -1,6 +1,6 @@
 Package: translator
 Title: Translate Texts with R
-Version: 0.0.0.9005
+Version: 0.0.0.9006
 Authors@R: 
     person("Adrian", "Hirt", , "am.hirt@pm.me", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0008-1929-6629"))
