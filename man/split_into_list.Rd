@@ -2,19 +2,58 @@
 % Please edit documentation in R/split_into_list.R
 \name{split_into_list}
 \alias{split_into_list}
-\title{Split Strings into List}
+\title{Split Character Vector into List by Size}
 \usage{
 split_into_list(data, max_kib = 100)
 }
 \arguments{
-\item{data}{Character vector}
+\item{data}{Character vector to be split.}
 
-\item{max_kib}{Numeric scalar giving the maximum size of vectors.}
+\item{max_kib}{Numeric scalar. The target maximum size in kilobytes for each
+sub-vector in the output list. Defaults to 100 KiB.}
+}
+\value{
+A list, where each element is a character vector representing a batch
 }
 \description{
-Split strings into list based on a maximum kilobyte number. Helper function
-to create requests.
+Splits a character vector into a list of character vectors, where each
+sub-vector's total size in kilobytes (calculated using \code{nchar(type='bytes')})
+is approximately at most \code{max_kib}. This is a helper function primarily used
+to prepare data batches for API requests with size limits.
+}
+\details{
+The function uses a greedy approach. It iterates through the input vector,
+adding elements to the current batch until adding the next element would
+exceed \code{max_kib}. At that point, the current batch is finalized, and a new
+batch starts with the element that didn't fit.
+
+\emph{Edge Case:} If a single string by itself exceeds \code{max_kib}, it will be
+placed in its own sub-vector in the list, which will necessarily exceed the
+limit.
 }
 \examples{
-split_into_list(c("hello", "world", "hallo", "welt"), max_kib = 0.1)
+# approx 10.7 KiB
+long_text <- paste(rep("abcde fghij", 1000), collapse = " ")
+short_text <- "short"
+items <- c(long_text, short_text, long_text, short_text)
+
+# Split into batches of max ~15 KiB
+batches_15kib <- split_into_list(items, max_kib = 15)
+length(batches_15kib) # Should be 2 batches
+
+# Verify sizes (approximate)
+get_size(batches_15kib[[1]]) # Should be ~10.7 KiB (long_text + short_text)
+get_size(batches_15kib[[2]]) # Should be ~10.7 KiB (long_text + short_text)
+
+# Split into batches of max ~10 KiB (forces long_text into its own batch)
+batches_10kib <- split_into_list(items, max_kib = 10)
+length(batches_10kib) # Should be 4 batches
+get_size(batches_10kib[[1]]) # ~10.7 KiB (violates limit due to single item)
+get_size(batches_10kib[[2]]) # Very small (short_text)
+
+# Empty input
+split_into_list(character(0))
+
+# All fit in one batch
+split_into_list(c("hello", "world"), max_kib = 1)
 }
