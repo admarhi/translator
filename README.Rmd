@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # translator
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/admarhi/translator/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/admarhi/translator/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 R package for tidyverse style text translations with the DeepL API.
