@@ -1,5 +1,4 @@
 # ---- Non-API Tests -----------------------------------------------------------
-context("translate: Input Validation")
 
 # These tests don't hit the API, so they don't need skipping
 test_that("translate errors on missing inputs", {
@@ -71,7 +70,6 @@ test_that("translate errors on invalid auth_key format", {
 })
 
 # ---- Live API Tests ----------------------------------------------------------
-context("translate: Core Functionality (Live API)")
 
 # Helper function to skip tests if API key is not available
 skip_if_no_key <- function() {
@@ -186,8 +184,6 @@ test_that("uses formality when specified (Live API)", {
   # print(paste("Formal:", resp_formal))
   # print(paste("Informal:", resp_informal))
 })
-
-context("translate: API Behavior (Live API)")
 
 # Note: Testing specific API errors like 403 (bad key) or 456 (quota)
 # is difficult in automated tests without intentionally using invalid keys

@@ -1,5 +1,4 @@
 # ---- Non-API Tests -----------------------------------------------------------
-context("improve: Input Validation")
 
 # These tests don't hit the API
 test_that("improve errors on missing inputs", {
@@ -45,7 +44,6 @@ test_that("improve errors on invalid auth_key format", {
 })
 
 # ---- Live API Tests ----------------------------------------------------------
-context("improve: Core Functionality (Live API)")
 
 # Helper function to skip tests if API key is not available
 skip_if_no_key <- function() {
@@ -148,8 +146,6 @@ test_that("uses target_lang when specified (Live API)", {
   expect_false(is.na(resp_us))
   expect_false(is.na(resp_gb))
 })
-
-context("improve: API Behavior (Live API)")
 
 test_that("uses correct API endpoint based on key type (Live API)", {
   skip_if_no_key()
