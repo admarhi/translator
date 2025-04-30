@@ -56,17 +56,21 @@
 #' @importFrom tibble as_tibble
 #' @importFrom dplyr mutate if_else across pull everything
 translate <- function(
-  data,
-  target_lang,
-  source_lang = NULL,
-  auth_key = Sys.getenv("DEEPL_AUTH_KEY"),
-  formality = "default",
-  max_request_size = 80,
-  timeout = 30
-) {
+    data,
+    target_lang,
+    source_lang = NULL,
+    auth_key = Sys.getenv("DEEPL_AUTH_KEY"),
+    formality = "default",
+    max_request_size = 80,
+    timeout = 30) {
   # Input validation
   if (missing(data) || !is.character(data)) {
-    stop("'data' must be a character vector")
+    stop("\'data\' must be a character vector")
+  }
+
+  # Handle all-NA case efficiently
+  if (all(is.na(data))) {
+    return(rep(NA_character_, length(data)))
   }
 
   # Validate target_lang
@@ -115,11 +119,15 @@ translate <- function(
     "https://api.deepl.com/v2/translate"
   }
 
-  # Store original NA positions to restore later
+  # Process only non-NA data
+  original_length <- length(data)
   na_positions <- is.na(data)
+  data_to_send <- data[!na_positions]
 
-  # convert NA to "NA" to allow for accurate size computation
-  data[na_positions] <- "NA"
+  # If, after the initial all(is.na()) check, there's somehow no data left
+  if (length(data_to_send) == 0) {
+    return(rep(NA_character_, original_length))
+  }
 
   # Set up the key
   key <- paste0("DeepL-Auth-Key ", auth_key)
@@ -146,8 +154,8 @@ translate <- function(
     req_base <- req_body_form(req_base, formality = formality)
   }
 
-  # Prepare batches for parallel processing
-  batches <- data |>
+  # Prepare batches using only non-NA data
+  batches <- data_to_send |>
     split_into_list(max_kib = max_request_size) |>
     map(\(x) req_body_form(req_base, text = x, .multi = "explode"))
 
@@ -178,14 +186,10 @@ translate <- function(
           return(rep(NA_character_, num_items_in_request))
         }
 
-        # Extract and process the text
+        # Extract and process the text - No need to handle "NA" string anymore
         json_body[["translations"]] |>
           map(\(y) as_tibble(y)) |>
           list_rbind() |>
-          mutate(
-            text = if_else(.data$text == "NA", NA, .data$text),
-            across(everything(), \(z) if_else(is.na(.data$text), NA, z))
-          ) |>
           pull("text")
       } else if (inherits(res, "error")) {
         # Failure after retries: Generate NAs for this batch
@@ -213,26 +217,27 @@ translate <- function(
     }) |>
     unlist() # Combine results from all batches
 
-  # Ensure the output length matches the input length
-  if (length(processed_results) != length(data)) {
-    warning("Output length does not match input length. Check for errors.")
-    # Attempt to resize, filling with NA
-    length(processed_results) <- length(data)
+  # --- Result Reconstruction ---
+  # Create the final vector, initially all NA
+  final_results <- rep(NA_character_, original_length)
+
+  # Check if the number of results matches the number of non-NA items sent
+  if (length(processed_results) != length(data_to_send)) {
+    warning(
+      paste(
+        "Number of results (", length(processed_results),
+        ") does not match number of non-NA items sent (", length(data_to_send),
+        "). Check for API errors. Filling available results."
+      )
+    )
+    # Attempt to resize; this might be inaccurate if some batches failed
+    # and `on_error = "continue"` was used.
+    # A more robust approach might try to map results back by batch.
+    length(processed_results) <- length(data_to_send)
   }
 
-  # Restore NA values in the original positions
-  processed_results[na_positions] <- NA_character_
+  # Place the processed results into the non-NA positions of the final vector
+  final_results[!na_positions] <- processed_results
 
-  # Create a full-length vector for the final result
-  final_results <- rep(NA_character_, length(data))
-  # Place the processed results into the non-NA positions
-  final_results[!na_positions] <- processed_results[!na_positions]
-
-  # No need to restore NAs based on na_positions again,
-  # as we started with a vector full of NAs.
-
-  # Remove the old length check and NA restoration based on na_positions
-  # Remove the conversion of data[na_positions] <- "NA" at the beginning
-
-  return(final_results)
+  final_results
 }

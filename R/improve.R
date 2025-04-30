@@ -57,18 +57,21 @@
 #' @importFrom tibble as_tibble
 #' @importFrom dplyr mutate if_else across pull everything
 improve <- function(
-  data,
-  target_lang = NULL,
-  auth_key = Sys.getenv("DEEPL_AUTH_KEY"),
-  max_request_size = 5,
-  timeout = 30
-) {
+    data,
+    target_lang = NULL,
+    auth_key = Sys.getenv("DEEPL_AUTH_KEY"),
+    max_request_size = 5,
+    timeout = 30) {
   # Input validation
   if (missing(data) || !is.character(data)) {
-    stop("'data' must be a character vector")
+    stop("\'data\' must be a character vector")
   }
 
-  
+  # Handle all-NA case efficiently
+  if (all(is.na(data))) {
+    return(rep(NA_character_, length(data)))
+  }
+
   # Validate target_lang if provided
   if (!is.null(target_lang) && !target_lang %in% VALID_IMPROVE_LANGUAGES) {
     stop(
@@ -92,11 +95,14 @@ improve <- function(
     "https://api.deepl.com/v2/write/rephrase"
   }
 
-  # Store original NA positions to restore later
+  # Process only non-NA data
+  original_length <- length(data)
   na_positions <- is.na(data)
+  data_to_send <- data[!na_positions]
 
-  # convert NA to "NA" to allow for accurate size computation
-  data[na_positions] <- "NA"
+  if (length(data_to_send) == 0) {
+    return(rep(NA_character_, original_length))
+  }
 
   # Set up the key
   key <- paste0("DeepL-Auth-Key ", auth_key)
@@ -117,8 +123,8 @@ improve <- function(
     req_base <- req_body_form(req_base, target_lang = target_lang)
   }
 
-  # Prepare batches for parallel processing
-  batches <- data |>
+  # Prepare batches using only non-NA data
+  batches <- data_to_send |>
     split_into_list(max_kib = max_request_size) |>
     map(\(x) req_body_form(req_base, text = x, .multi = "explode"))
 
@@ -153,10 +159,6 @@ improve <- function(
         json_body[["improvements"]] |>
           map(\(y) as_tibble(y)) |>
           list_rbind() |>
-          mutate(
-            text = if_else(.data$text == "NA", NA, .data$text),
-            across(everything(), \(z) if_else(is.na(.data$text), NA, z))
-          ) |>
           pull("text")
       } else if (inherits(res, "error")) {
         # Failure after retries: Generate NAs for this batch
@@ -184,19 +186,23 @@ improve <- function(
     }) |>
     unlist() # Combine results from all batches
 
-  # Ensure the output length matches the input length
-  # This is a safeguard, especially if errors occurred determining batch sizes
-  if (length(processed_results) != length(data)) {
-    warning("Output length does not match input length. Check for errors.")
-    # Attempt to resize, filling with NA, though this might be incorrect
-    length(processed_results) <- length(data)
+  # Create the final vector, initially all NA
+  final_results <- rep(NA_character_, original_length)
+
+  # Check if the number of results matches the number of non-NA items sent
+  if (length(processed_results) != length(data_to_send)) {
+    warning(
+      paste(
+        "Number of results (", length(processed_results),
+        ") does not match number of non-NA items sent (", length(data_to_send),
+        "). Check for API errors. Filling available results."
+      )
+    )
+    length(processed_results) <- length(data_to_send)
   }
 
-  # Restore NA values in the original positions
-  processed_results[na_positions] <- NA_character_
+  # Place the processed results into the non-NA positions of the final vector
+  final_results[!na_positions] <- processed_results
 
-  # Return the improvements
-  processed_results
+  final_results
 }
-
-
