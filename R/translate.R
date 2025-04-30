@@ -6,10 +6,12 @@
 #'
 #' @param data Character scalar or vector to be translated. Required.
 #' @param target_lang Character scalar specifying the target language. Must be
-#' one of the supported DeepL language codes (see Details).
+#' one of the supported DeepL language codes listed in
+#' [VALID_TRANSLATE_TARGET_LANGUAGES]. Required.
 #' @param source_lang Character scalar specifying the source language
 #' (optional). If NULL (default), DeepL will auto-detect the source language.
-#' Must be one of the supported DeepL language codes (see Details).
+#' Must be one of the supported DeepL language codes listed in
+#' [VALID_TRANSLATE_SOURCE_LANGUAGES].
 #' @param auth_key Character scalar containing the DeepL API authentication key.
 #'        Required. Can be provided directly or set as environment variable
 #'        'DEEPL_AUTH_KEY'.
@@ -22,18 +24,8 @@
 #' @param timeout Numeric scalar specifying the timeout for API requests in
 #'        seconds (default: 30).
 #'
-#' @details
-#' Supported language codes for both source and target languages are:
-#' "BG" (Bulgarian), "CS" (Czech), "DA" (Danish), "DE" (German),
-#' "EL" (Greek), "EN" (English), "EN-GB" (British English),
-#' "EN-US" (American English), "ES" (Spanish), "ET" (Estonian),
-#' "FI" (Finnish), "FR" (French), "HU" (Hungarian), "ID" (Indonesian),
-#' "IT" (Italian), "JA" (Japanese), "KO" (Korean), "LT" (Lithuanian),
-#' "LV" (Latvian), "NB" (Norwegian), "NL" (Dutch), "PL" (Polish),
-#' "PT" (Portuguese), "PT-BR" (Brazilian Portuguese),
-#' "PT-PT" (European Portuguese), "RO" (Romanian), "RU" (Russian),
-#' "SK" (Slovak), "SL" (Slovenian), "SV" (Swedish), "TR" (Turkish),
-#' "UK" (Ukrainian), "ZH" (Chinese).
+#' @seealso [VALID_TRANSLATE_SOURCE_LANGUAGES],
+#' [VALID_TRANSLATE_TARGET_LANGUAGES]
 #'
 #' @return Character vector of translated text. Will preserve the length and
 #'         order of the input. NA values in the input will remain NA in the
@@ -78,18 +70,24 @@ translate <- function(
   }
 
   # Validate target_lang
-  if (missing(target_lang) || !target_lang %in% valid_langs) {
+  if (
+    missing(target_lang) ||
+      !target_lang %in% VALID_TRANSLATE_TARGET_LANGUAGES
+  ) {
     stop(
       "'target_lang' must be one of: ",
-      paste(valid_langs, collapse = ", ")
+      paste(VALID_TRANSLATE_TARGET_LANGUAGES, collapse = ", ")
     )
   }
 
   # Validate source_lang if provided
-  if (!is.null(source_lang) && !source_lang %in% valid_langs) {
+  if (
+    !is.null(source_lang) &&
+      !source_lang %in% VALID_TRANSLATE_SOURCE_LANGUAGES
+  ) {
     stop(
       "'source_lang' must be one of: ",
-      paste(valid_langs, collapse = ", ")
+      paste(VALID_TRANSLATE_SOURCE_LANGUAGES, collapse = ", ")
     )
   }
 
@@ -225,6 +223,16 @@ translate <- function(
   # Restore NA values in the original positions
   processed_results[na_positions] <- NA_character_
 
-  # Return the translations
-  processed_results
+  # Create a full-length vector for the final result
+  final_results <- rep(NA_character_, length(data))
+  # Place the processed results into the non-NA positions
+  final_results[!na_positions] <- processed_results[!na_positions]
+
+  # No need to restore NAs based on na_positions again,
+  # as we started with a vector full of NAs.
+
+  # Remove the old length check and NA restoration based on na_positions
+  # Remove the conversion of data[na_positions] <- "NA" at the beginning
+
+  return(final_results)
 }

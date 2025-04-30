@@ -68,17 +68,7 @@ improve <- function(
     stop("'data' must be a character vector")
   }
 
-  # Vector of valid improve languages
-  VALID_IMPROVE_LANGUAGES <- c(
-    "DE",
-    "EN-GB",
-    "EN-US",
-    "ES",
-    "FR",
-    "IT",
-    "PT-BR",
-    "PT-PT"
-  )
+  
   # Validate target_lang if provided
   if (!is.null(target_lang) && !target_lang %in% VALID_IMPROVE_LANGUAGES) {
     stop(
@@ -208,3 +198,5 @@ improve <- function(
   # Return the improvements
   processed_results
 }
+
+

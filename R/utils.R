@@ -41,17 +41,45 @@ extract_resp_deepl <- function(data, name) {
     unlist()
 }
 
-#' @title DeepL API Valid Language Codes
+#' @title DeepL API Valid Source Language Codes
 #'
 #' @description
-#' Vector containing all valid language codes supported by the DeepL API.
-#' These codes can be used for both source and target languages.
+#' Vector containing all valid source language codes supported by the DeepL API
+#' translation endpoint.
 #'
 #' @format A character vector
 #' @keywords internal
-valid_langs <- c(
-  "BG", "CS", "DA", "DE", "EL", "EN", "EN-GB", "EN-US",
-  "ES", "ET", "FI", "FR", "HU", "ID", "IT", "JA", "KO",
-  "LT", "LV", "NB", "NL", "PL", "PT", "PT-BR", "PT-PT",
+#' @seealso [VALID_TRANSLATE_TARGET_LANGUAGES]
+VALID_TRANSLATE_SOURCE_LANGUAGES <- c(
+  "BG", "CS", "DA", "DE", "EL", "EN", "ES", "ET", "FI", "FR", "HU", "ID", "IT", 
+  "JA", "KO", "LT", "LV", "NB", "NL", "PL", "PT", "RO", "RU", "SK", "SL", "SV", 
+  "TR", "UK", "ZH"
+)
+
+#' @title DeepL API Valid Target Language Codes
+#'
+#' @description
+#' Vector containing all valid target language codes supported by the DeepL API
+#' translation endpoint.
+#'
+#' @format A character vector
+#' @keywords internal
+#' @seealso [VALID_TRANSLATE_SOURCE_LANGUAGES]
+VALID_TRANSLATE_TARGET_LANGUAGES <- c(
+  "AR", "BG", "CS", "DA", "DE", "EL", "EN-GB", "EN-US", "ES", "ET", "FI", "FR", 
+  "HU", "ID", "IT", "JA", "KO", "LT", "LV", "NB", "NL", "PL", "PT-BR", "PT-PT",
   "RO", "RU", "SK", "SL", "SV", "TR", "UK", "ZH"
+)
+
+
+#' @title DeepL API Valid Improve Language Codes
+#'
+#' @description
+#' Vector containing all valid language codes supported by the DeepL API
+#' improve endpoint.
+#'
+#' @format A character vector
+#' @keywords internal
+VALID_IMPROVE_LANGUAGES <- c(
+  "DE", "EN", "EN-GB", "EN-US", "ES", "FR", "IT", "PT-BR", "PT-PT"
 )
