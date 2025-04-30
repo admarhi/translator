@@ -4,7 +4,7 @@ Version: 0.0.0.9007
 Authors@R: 
     person("Adrian", "Hirt", , "am.hirt@pm.me", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0008-1929-6629"))
-Description: Translate text
+Description: Translate text in a tidyverse oriented approach.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -13,8 +13,8 @@ Imports:
     dplyr,
     httr2,
     purrr,
-    stringi,
-    tibble
+    tibble,
+    withr
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

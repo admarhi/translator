@@ -6,7 +6,7 @@
 \alias{translator-package}
 \title{translator: Translate Texts with R}
 \description{
-Translate text
+Translate text in a tidyverse oriented approach.
 }
 \author{
 \strong{Maintainer}: Adrian Hirt \email{am.hirt@pm.me} (\href{https://orcid.org/0009-0008-1929-6629}{ORCID})

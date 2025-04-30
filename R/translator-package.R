@@ -21,5 +21,6 @@
 #' @importFrom purrr list_rbind
 #' @importFrom purrr map
 #' @importFrom tibble as_tibble
+#' @importFrom withr with_envvar
 ## usethis namespace: end
 NULL
