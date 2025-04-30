@@ -33,10 +33,6 @@ extract_resp_deepl <- function(data, name) {
     map(\(x) resp_body_json(x)[[name]] |>
       map(\(y) as_tibble(y)) |>
       list_rbind() |>
-      mutate(
-        text = if_else(.data$text == "NA", NA, .data$text),
-        across(everything(), \(x) if_else(is.na(.data$text), NA, x))
-      ) |>
       pull("text")) |>
     unlist()
 }
