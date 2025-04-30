@@ -18,11 +18,13 @@ translate(
 \item{data}{Character scalar or vector to be translated. Required.}
 
 \item{target_lang}{Character scalar specifying the target language. Must be
-one of the supported DeepL language codes (see Details).}
+one of the supported DeepL language codes listed in
+\link{VALID_TRANSLATE_TARGET_LANGUAGES}. Required.}
 
 \item{source_lang}{Character scalar specifying the source language
 (optional). If NULL (default), DeepL will auto-detect the source language.
-Must be one of the supported DeepL language codes (see Details).}
+Must be one of the supported DeepL language codes listed in
+\link{VALID_TRANSLATE_SOURCE_LANGUAGES}.}
 
 \item{auth_key}{Character scalar containing the DeepL API authentication key.
 Required. Can be provided directly or set as environment variable
@@ -49,19 +51,6 @@ This function sends text to DeepL's translation API and returns the
 translated results. It handles batching of large text inputs and parallel
 processing of translation requests.
 }
-\details{
-Supported language codes for both source and target languages are:
-"BG" (Bulgarian), "CS" (Czech), "DA" (Danish), "DE" (German),
-"EL" (Greek), "EN" (English), "EN-GB" (British English),
-"EN-US" (American English), "ES" (Spanish), "ET" (Estonian),
-"FI" (Finnish), "FR" (French), "HU" (Hungarian), "ID" (Indonesian),
-"IT" (Italian), "JA" (Japanese), "KO" (Korean), "LT" (Lithuanian),
-"LV" (Latvian), "NB" (Norwegian), "NL" (Dutch), "PL" (Polish),
-"PT" (Portuguese), "PT-BR" (Brazilian Portuguese),
-"PT-PT" (European Portuguese), "RO" (Romanian), "RU" (Russian),
-"SK" (Slovak), "SL" (Slovenian), "SV" (Swedish), "TR" (Turkish),
-"UK" (Ukrainian), "ZH" (Chinese).
-}
 \examples{
 \dontrun{
 # Simple translation
@@ -79,4 +68,8 @@ Sys.setenv(DEEPL_AUTH_KEY = "your-api-key")
 translate("Hello world", target_lang = "ES")
 }
 
+}
+\seealso{
+\link{VALID_TRANSLATE_SOURCE_LANGUAGES},
+\link{VALID_TRANSLATE_TARGET_LANGUAGES}
 }

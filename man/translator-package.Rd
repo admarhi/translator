@@ -4,12 +4,12 @@
 \name{translator-package}
 \alias{translator}
 \alias{translator-package}
-\title{translator: What the Package Does (One Line, Title Case)}
+\title{translator: Translate Texts with R}
 \description{
-What the package does (one paragraph).
+Translate text
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Adrian Hirt \email{am.hirt@pm.me} (\href{https://orcid.org/0009-0008-1929-6629}{ORCID})
 
 }
 \keyword{internal}
